@@ -15,6 +15,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,7 +42,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun QuizScreen(modifier: Modifier = Modifier) {
-    val question = questionBank[0]  // временно только первый вопрос
+    var currentIndex by remember { mutableIntStateOf(0) }
+    var correctCount by remember { mutableIntStateOf(0) }
+    var answered by remember { mutableStateOf(false) }
+
+    val question = questionBank[currentIndex]
+
+    fun checkAnswer(userAnswer: Boolean) {
+        if (userAnswer == question.answer) correctCount++
+        answered = true
+    }
 
     Column(
         modifier = modifier
@@ -51,12 +65,16 @@ fun QuizScreen(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(vertical = 24.dp)
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Button(onClick = { }) { Text("TRUE") }
-            Button(onClick = { }) { Text("FALSE") }
+        if (!answered) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(onClick = { checkAnswer(true) }) { Text("TRUE") }
+                Button(onClick = { checkAnswer(false) }) { Text("FALSE") }
+            }
+        } else {
+            Text("Вы ответили! Нажмите NEXT для продолжения.")
         }
     }
 }
