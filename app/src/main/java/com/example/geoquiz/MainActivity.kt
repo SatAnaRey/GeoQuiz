@@ -1,6 +1,7 @@
 package com.example.geoquiz
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.geoquiz.ui.theme.GeoQuizTheme
@@ -42,15 +44,26 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun QuizScreen(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     var currentIndex by remember { mutableIntStateOf(0) }
     var correctCount by remember { mutableIntStateOf(0) }
     var answered by remember { mutableStateOf(false) }
+    var finished by remember { mutableStateOf(false) }
 
+    val isLast = currentIndex == questionBank.lastIndex
     val question = questionBank[currentIndex]
 
     fun checkAnswer(userAnswer: Boolean) {
         if (userAnswer == question.answer) correctCount++
         answered = true
+        if (isLast) {
+            finished = true
+            Toast.makeText(
+                context,
+                "Правильных ответов: $correctCount из ${questionBank.size}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     Column(
@@ -73,8 +86,27 @@ fun QuizScreen(modifier: Modifier = Modifier) {
                 Button(onClick = { checkAnswer(true) }) { Text("TRUE") }
                 Button(onClick = { checkAnswer(false) }) { Text("FALSE") }
             }
+        }
+
+        if (!finished) {
+            Button(
+                onClick = {
+                    if (answered && !isLast) {
+                        currentIndex++
+                        answered = false
+                    }
+                },
+                enabled = answered && !isLast,
+                modifier = Modifier.padding(top = 24.dp)
+            ) {
+                Text("NEXT ›")
+            }
         } else {
-            Text("Вы ответили! Нажмите NEXT для продолжения.")
+            Text(
+                text = "Тест завершён. Правильных ответов: $correctCount из ${questionBank.size}",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 24.dp)
+            )
         }
     }
 }
